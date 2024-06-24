@@ -1,6 +1,6 @@
-const baseUrl = 'https://bitdash-a.akamaihd.net/content/MI201109210084_1/video/720_2400000/dash';
+const baseUrl = '/encrypted-media/video';
 const initUrl = `${baseUrl}/init.mp4`;
-const templateUrl = `${baseUrl}/segment_$Number$.m4s`;
+const templateUrl = `${baseUrl}/seg-$Number$.mp4`;
 
 // 发送请求的工具
 const sendRequest = (url) => {
@@ -30,8 +30,8 @@ const loadSegmentFactory = (sourceBuffer) => (url) => {
 
 // 按顺序加载片段
 const loadNextSegmentFactory = (sourceBuffer) => {
-    const segmentCount = 52;
-    let currentIndex = 0;
+    const segmentCount = 7;
+    let currentIndex = 1;
 
     return () => {
         if (currentIndex > segmentCount) {
@@ -47,7 +47,7 @@ const loadNextSegmentFactory = (sourceBuffer) => {
 
 const onMediaSourceOpen = (event) => {
     const {target: mediaSource} = event;
-    const videoSourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.4d401f"');
+    const videoSourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.64001F"');
     const loadNextSegment = loadNextSegmentFactory(videoSourceBuffer);
     videoSourceBuffer.addEventListener('updateend', loadNextSegment); // updateend 事件表示上一个 segment 已经被成功 append 进 source buffer
 
@@ -65,5 +65,13 @@ const start = (videoElement) => {
     videoElement.src = window.URL.createObjectURL(mediaSource); // 3. 把 media source 实例转换成可以被 video 使用的内存地址
 }
 
-start(document.getElementById('videoElement'));
+const videoElement = document.getElementById('videoElement');
+// 设置好 media keys
+setMediaKeysTo(videoElement);
+// 触发 encrypted 事件时获取 license
+videoElement.addEventListener('encrypted', onEncrypted)
+
+// 开始加载资源
+start(videoElement);
+
 
